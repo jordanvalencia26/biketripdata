@@ -1,0 +1,44 @@
+--cleaning up bad data points
+delete from tripdata_202103
+where ride_id is NULL
+
+delete from tripdata_202104
+where ride_id is NULL
+
+delete from tripdata_202105
+where ride_id is NULL
+--sql assigned incorrect datatype preventing union all
+ALTER TABLE dbo.tripdata_202103
+ALTER COLUMN start_station_id nvarchar(255);
+--creating unioned table
+SELECT * INTO TRIPDATA
+FROM 
+	tripdata_202103
+	UNION ALL
+	select * from tripdata_202104
+	UNION ALL
+	select * from tripdata_202105
+
+	select * from tripdata
+
+--creating view
+CREATE VIEW view_tripdata AS
+	select rideable_type[RideType],
+		DATENAME(MONTH,started_at)[Month],
+		DATENAME(DW,CAST(day_of_week as int))[DayofWeek],
+		CAST(ride_length as time)[RideLength],
+		start_station_name[StartStation],
+		end_station_name[EndStation],
+		start_lat[StartLat],
+		start_lng[StartLng],
+		end_lat[EndLat],
+		end_lng[EndLng],
+		CASE WHEN member_casual = 'member' THEN 'YES' ELSE 'NO' END AS [Member]
+		from TRIPDATA
+--final view for tableau
+		select * from view_tripdata
+		drop view view_tripdata
+
+
+	
+
